@@ -1,0 +1,419 @@
+﻿@model Boards.WebApp.ViewModels.DefaultViewModel
+@{
+    ViewData["Title"] = ViewData["TituloQuadro"];
+}
+    <div id="app" class="conteudoPDF" style="background:#fff">
+        <!-- Modal de Usuários do Quadro -->
+        <div class="modal fade" id="modalUsuarios" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Usuários no quadro</h5>
+                        <button type="button" class="close" id="btFecharModal" data-dismiss="modal" aria-label="Fechar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div v-for="(cartao, index) in quadroAtual.cartoes" v-if="cartao.usuario.id != idAutorQuadro" style="padding:5px">
+                            <a href="#" v-on:click="removerUsuario(cartao.usuario.id)" class="btn btn-sm btn-danger"><ion-icon name="trash"></ion-icon></a> {{cartao.usuario.nome}}, {{index}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ul id="messagesList"></ul>
+        <transition name="fade">
+            <div v-if="show">
+                <div class="boards-div bg-gray">
+                    <div class="row">
+                        <div class="col">
+                            <h5>
+                                <ion-icon name="lock-closed" class="text-danger" v-if="!quadroAtual.is_Aberto"></ion-icon>
+                                <ion-icon name="lock-open" class="text-success" v-if="quadroAtual.is_Aberto"></ion-icon>
+                                @ViewData["TituloQuadro"]
+                            </h5>
+                            <small><ion-icon name="time-outline"></ion-icon> {{formatDate(quadroAtual.data_Criacao)}}</small>
+                        </div>
+                        <div class="col d-print-none">
+                            <div class="float-right text-right">
+                                <div class="dropdown dropleft" v-if="idUsuarioLogado == idAutorQuadro">
+                                    <a href="#" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <ion-icon name="ellipsis-vertical"></ion-icon>
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item" href="#" v-on:click="toggleQuadro">{{novoStatusQuadro}} quadro para visitantes</a>
+                                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modalUsuarios">Excluir usuário(s) do quadro</a>
+                                    </div>
+                                </div>
+                                <div>
+                                    <a href="#" v-on:click="imprimir()"><ion-icon name="print"></ion-icon></a>
+                                    <a href="#" v-on:click="aumentarCartoes()"><ion-icon name="expand"></ion-icon></a>
+                                    <a v-on:click="copyPageAddress()" v-on:mousedown="copyPageAddress()" href="#"><ion-icon name="copy"></ion-icon>  <input class="input-address" v-on:mousedown="copyPageAddress()" disabled type="text" id="enderecoPagina" :value="enderecoPagina" /></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <div class="row row-cols-4">
+                    <div :class="classeCartao">
+                        <div class="boards-div text-white" :style="'background:'+ cartaoDoAutor.backgroundColor">
+                            <span v-if="cartaoDoAutor.usuario.id == idAutorQuadro" class="float-right text-warning">
+                                <ion-icon name="star"></ion-icon>
+                            </span>
+                            <small>Cartão de</small>
+                            <h6>{{cartaoDoAutor.usuario.nome}} </h6>
+                            <textarea class="form-control conteudoCartao" v-if="cartaoDoAutor.usuario.id == idUsuarioLogado" v-on:keyup="atualizarCartao(cartaoDoAutor.id)" :id="'conteudoCartao-' + cartaoDoAutor.id" :rows="qtdRows" v-html="cartaoDoAutor.conteudo"></textarea>
+                            <textarea class="form-control conteudoCartao" v-else disabled :id="'conteudoCartao-' + cartaoDoAutor.id" :rows="qtdRows" v-html="cartaoDoAutor.conteudo"></textarea>
+                        </div>
+                        <br />
+                    </div>
+                    <div :class="classeCartao" v-for="(cartao, index) in cartoes" v-if="cartao.usuario.id != idAutorQuadro ">
+                        <div class="boards-div text-white" :style="'background:'+ cartao.backgroundColor">
+                            <div class="float-right">
+                                <h1 class="numero-cartao">{{index}}</h1>
+                            </div>
+                            <small>Cartão de</small>
+                            <h6>{{cartao.usuario.nome}} </h6>
+                            <textarea class="form-control" v-if="cartao.usuario.id == idUsuarioLogado" v-on:keyup="atualizarCartao(cartao.id)" :id="'conteudoCartao-' + cartao.id" :rows="qtdRows" v-html="cartao.conteudo"></textarea>
+                            <textarea class="form-control" v-else disabled :id="'conteudoCartao-' + cartao.id" :rows="qtdRows" v-html="cartao.conteudo"></textarea>
+                        </div>
+                        <br />
+                    </div>
+                </div>
+            </div>
+        </transition>
+    </div>
+
+
+
+<script>
+
+    var home = new Vue({
+        el: "#app",
+        data: {
+            qtdRows: 5,
+            classeCartao: "col-md col-sm-6 col-md-3",
+            show: false,
+            quadroAtual: "",
+            resultadoSocket:"",
+            novoStatusQuadro: "Abrir",
+            cartoes: "",
+            enderecoPagina: "",
+            idUsuarioLogado: @Model.UsuarioLogado.Id,
+            cartaoDoAutor: "",
+            idAutorQuadro: @ViewData["IdAutorQuadro"],
+            idQuadro: @ViewData["IdQuadroAtual"],
+        },
+        methods: {
+            streamInfoCartao(cartao) {
+                var tempCartao = cartao.value;
+                for (var y = 0; y < this.cartoes.length; y++) {
+                    if (this.cartoes[y].id == tempCartao.id && tempCartao.id_Usuario != this.idUsuarioLogado) {
+                        console.log('entrou aqui!');
+                        this.cartoes[y].conteudo = tempCartao.conteudo;
+                    }
+                }
+            },
+            streamCartoesQuadro(quadro) {
+                this.resultadoSocket = quadro;
+                this.cartoes = quadro.value.cartoes;
+            },
+            signalR() {
+                var connection = new signalR.HubConnectionBuilder().withUrl("/streaminghub").build();
+                connection.on("ReadCartoesUpdate-" + this.idQuadro, function (cartao) {
+                    home.streamInfoCartao(cartao);
+                });
+                connection.on("ReadCartoesQuadroUpdate-" + this.idQuadro, function (quadro) {
+                    home.streamCartoesQuadro(quadro);
+                });
+
+                console.log('entrou aqui');
+                connection.start().then(function () {
+                    return console.log('Conectado com sucesso.');
+                }).catch(function (err) {
+                    return console.error(err.toString());
+                });
+            },
+            aumentarCartoes() {
+                $("textarea").each(function () {
+                    this.style.height = (this.scrollHeight + 10) + 'px';
+                });
+            },
+            removerUsuario(idUsuario) {
+                showLoader();
+                axios.post('/api/quadro/removerUsuario?idQuadro=' + this.quadroAtual.id + "&idUsuario=" + idUsuario).then(response => {
+                    if (response.data == "success") {
+                        location.reload();
+                    }
+                    hideLoader();
+                }).catch(error => {
+                    console.log(error);
+                    hideLoader();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: error.response.data
+                    });
+                });
+            },
+            imprimir() {
+                showLoader();
+                var classeAnterior = this.classeCartao;
+                this.classeCartao = "col-md-12";
+                setTimeout(function () {
+                    $("textarea").each(function () {
+                        this.style.height = (this.scrollHeight + 100) + 'px';
+                    });
+
+                    hideLoader();
+                    window.print();
+                }, 60)
+                setTimeout(function () {
+                    home.classeCartao = classeAnterior;
+                }, 400)
+            },
+            salvarComoPDF() {
+                showLoader();
+                var classeAnterior = this.classeCartao;
+                this.classeCartao = "col-md-12";
+                setTimeout(function () {
+                $("textarea").each(function () {
+                    this.style.height = (this.scrollHeight + 10) + 'px';
+                });
+                }, 100)
+
+                setTimeout(function () {
+                    var pdf = new jsPDF('p', 'pt', 'a4');
+                    pdf.internal.scaleFactor = 3;
+                    var options = {
+                        width: '50%',
+                        pagesplit: true
+                    };
+                    pdf.addHTML($('body')[0],30,0, options, function () {
+                        pdf.save('Boards.pdf');
+                    });
+                }, 200)
+
+                setTimeout(function () {
+                    home.classeCartao = classeAnterior;
+                    hideLoader();
+                }, 400)
+            },
+            aumentarQtdRows() {
+                this.qtdRows++;
+            },
+            diminuirQtdRows() {
+                if (this.qtdRows > 2) {
+                    this.qtdRows--;
+                }
+            },
+            toggleQuadro() {
+                showLoader();
+                axios.post('/api/quadro/ToggleAberturaQuadro?idQuadro=' + this.quadroAtual.id).then(response => {
+                    hideLoader();
+                    location.reload();
+                }).catch(error => {
+                    console.log(error);
+                    hideLoader();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: error.response.data
+                    });
+                });
+            },
+            atualizarCartoes() {
+                setInterval(function () {
+                    if (home.cartaoDoAutor.usuario.id != home.idUsuarioLogado) {
+                        axios.get('/api/quadro/GetConteudoCartao?idCartao=' + home.cartaoDoAutor.id).then(response => {
+                            home.cartaoDoAutor.conteudo = response.data;
+                        });
+                    }
+
+                    axios.get('/api/quadro/getquadro?id=' + home.idQuadro).then(response => {
+                        home.quadroAtual = response.data;
+                        var cartoesTemp = home.quadroAtual.cartoes;
+                        for (var i = 0; i < cartoesTemp.length; i++) {
+                            for (var y = 0; y < home.cartoes; y++) {
+                                if (home.cartoes[y].id != cartoesTemp[i].id) {
+                                    home.cartoes.includes(cartoesTemp[i]);
+                                }
+                            }
+                        }
+                    })
+
+                }, 300);
+            },
+            atualizarCartao(idDoCartao) {
+                var conteudo = document.getElementById('conteudoCartao-' + idDoCartao).value;
+                var conteudoHtml = document.getElementById('conteudoCartao-' + idDoCartao).value.replace(/\n\r?/g, '&#013;');;
+                console.log(conteudoHtml);
+                showLoader();
+                axios({
+                    method: 'post',
+                    url: '/api/quadro/updatecartao',
+                    data: {
+                        idCartao: idDoCartao,
+                        conteudo: conteudoHtml
+                    }
+                }).then(response => {
+                  hideLoader();
+                })
+                .catch(error => {
+                    console.log(error);
+                    hideLoader();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: error.response.data
+                    });
+                });
+            },
+            loadQuadro() {
+
+                showLoader();
+                axios.get('/api/quadro/getquadro?id=' + this.idQuadro).then(response => {
+                    this.quadroAtual = response.data;
+                    this.cartoes = this.quadroAtual.cartoes;
+                    console.log(this.quadroAtual.cartoes);
+
+                    if (this.quadroAtual.is_Aberto) {
+                        this.novoStatusQuadro = "Fechar";
+                    }
+                    else {
+                        this.novoStatusQuadro = "Abrir";
+                    }
+                    var idsUsuariosNoQuadro = [];
+                    for (var i = 0; i < this.cartoes.length; i++) {
+                        if (this.cartoes[i].usuario.id == this.idAutorQuadro) {
+                            this.cartaoDoAutor = this.cartoes[i];
+                        }
+                        idsUsuariosNoQuadro.push(this.cartoes[i].usuario.id);
+                    }
+                    if (this.quadroAtual.is_Aberto && this.idUsuarioLogado != 0 && !idsUsuariosNoQuadro.includes(this.idUsuarioLogado)) {
+                        this.convidarUsuarioVisualizandoParaQuadro();
+                    }
+
+                    if (this.idUsuarioLogado == 0 && this.quadroAtual.is_Aberto) {
+                        this.identificarUsuario();
+                    }
+
+                    hideLoader();
+                })
+                .catch(error => {
+                    console.log(error);
+                    hideLoader();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: error.response.data
+                    });
+                });
+
+
+            },
+            convidarUsuarioVisualizandoParaQuadro() {
+                Swal.fire({
+                    title: '<br> Gostaria de participar do quadro? <br>',
+                    showCloseButton: true,
+                    showCancelButton: true,
+                    confirmButtonText:
+                        'Quero participar do quadro',
+                    cancelButtonText:
+                        'Só quero assistir',
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        axios.post('/api/quadro/participarQuadro?idQuadro=' + this.quadroAtual.id).then(response => {
+                            location.reload();
+                        }).catch(error => {
+                            hideLoader();
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: error.response.data
+                            })
+                        });
+                    }
+                });
+            },
+            identificarUsuario() {
+                Swal.fire({
+                    title: '<br> Você ainda não se identificou <br>',
+                    showCloseButton: true,
+                    showCancelButton: true,
+                    confirmButtonText:
+                        'Quero participar do quadro',
+                    cancelButtonText:
+                        'Só quero assistir',
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Identifique-se',
+                            html:
+                                '<input type="text" class="form-control" max="10" placeholder="Seu nome" id="nomeVisitante" />' +
+                                '<input type="e-mail" class="form-control" max="10" placeholder="Seu e-mail" id="emailVisitante" />',
+                            confirmButtonText: 'Participar!',
+                        }).then(result => {
+                            if (result.isConfirmed) {
+                                showLoader();
+                                var nomeVisitante = document.getElementById('nomeVisitante').value;
+                                var emailVisitante = document.getElementById('emailVisitante').value;
+                                if (nomeVisitante.length > 0 && emailVisitante.length > 5) {
+                                    var requestAddress = '/api/quadro/AddUsuarioToBoard?nomeUsuario=' + nomeVisitante + '&emailUsuario=' + emailVisitante + '&idQuadro=' + this.idQuadro;
+                                    axios.post(requestAddress).then(response => {
+                                        location.reload();
+                                    }).catch(error => {
+                                        hideLoader();
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Oops...',
+                                            text: error.response.data
+                                        })
+                                    });
+                                }
+                                else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Oops...',
+                                        text: 'Por favor, preencha o seu nome e e-mail corretamente.'
+                                    }).then(response => {
+                                        this.identificarUsuario();
+                                    })
+                                }
+
+                            }
+                        })
+                    }
+                })
+            },
+            copyPageAddress() {
+                var copyText = document.getElementById("enderecoPagina");
+                copyText.disabled = false;
+                copyText.select();
+                copyText.setSelectionRange(0, 99999);
+                document.execCommand("copy");
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Copiado',
+                    text: 'Agora é convidar as pessoas!',
+                    showConfirmButton: false,
+                    timer: 1000
+                })
+                copyText.disabled = true;
+            },
+            formatDate(value) {
+                if (value) {
+                    return moment(String(value)).format('DD/MM/YYYY')
+                }
+            }
+        },
+        mounted: function () {
+            this.show = true;
+            this.loadQuadro();
+            //this.atualizarCartoes();
+            this.enderecoPagina = window.location.href;
+            this.signalR();
+        }
+    });
+</script>

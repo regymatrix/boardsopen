@@ -1,0 +1,73 @@
+﻿@model Boards.WebApp.ViewModels.DefaultViewModel
+@{
+    ViewData["Title"] = "Dashboard Administrativo";
+    Layout = "../Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app">
+    <transition name="fade">
+        <div v-if="show">
+            <div class="space-15"></div>
+            <div class="boards-div" v-if="!semQuadros">
+                <div class="caixaTitulo">
+                    <img class="float-left" src="~/img/dashboard.png" width="30px" /><h2>&nbsp;Dashboard</h2>
+                </div>
+                <div class="padding-20 text-center">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card-default text-white bg-secondary">
+                                <div class="card-header"><ion-icon name="people"></ion-icon> @ViewData["QtdUsuarios"] Usuários</div>
+                                <a class="btn btn-dark btn-block" href="/Admin/Usuarios">Gerenciar</a>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card-default text-white bg-info">
+                                <div class="card-header"><ion-icon name="link"></ion-icon> @ViewData["QtdLeads"] Leads</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card-default text-white bg-success">
+                                <div class="card-header"><ion-icon name="albums"></ion-icon> @ViewData["QtdQuadros"] Quadros</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card-default text-white bg-liberty">
+                                <div class="card-header"><ion-icon name="tablet-landscape"></ion-icon> @ViewData["QtdCartoes"] Cartões</div>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-12 text-left">
+
+                            <hr />
+                            <a href="@Url.Action("ImportarClientesVIP","Admin")" class="btn btn-dark">Importar usuários VIP</a>
+                            @*<a href="@Url.Action("ExportarLeads","Admin")" class="btn btn-dark">Exportar leads</a>*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>
+
+
+
+<script>
+
+    var home = new Vue({
+        el: "#app",
+        data: {
+            quadros: "",
+            semQuadros: false,
+            nomeQuadro: "",
+            show: false
+        },
+        methods: {
+
+        },
+        mounted: function () {
+            this.show = true;
+        }
+    });
+</script>

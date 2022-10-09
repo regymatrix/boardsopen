@@ -1,0 +1,180 @@
+﻿@model Boards.WebApp.ViewModels.DefaultViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div id="app">
+    <transition name="fade">
+        <div v-if="show">
+            <div class="boards-div bg-gray">
+                <ion-icon name="finger-print-outline"></ion-icon> Bem vindo, @Model.UsuarioLogado.Nome
+            </div>
+            <div class="space-15"></div>
+            <div class="boards-div" v-if="semQuadros">
+                <div class="padding-20 text-center">
+                    <a href="#" v-on:click="addQuadro()"><ion-icon name="add-circle" class="zoom-2" size="large"></ion-icon><br /> Você ainda não criou nenhum quadro, crie agora!</a>
+                </div>
+            </div>
+            <div class="boards-div" v-if="!semQuadros">
+                <div class="caixaTitulo">
+                    <img class="float-left" src="~/img/menu.png" width="30px" /><h2>&nbsp;Dashboard</h2>
+                </div>
+                <div class="padding-20 text-center">
+                    <div class="row">
+                        <div v-for="quadro in quadros" class="col-md-3">
+                            <div class="card text-left">
+
+                                <div class="card-body">
+                                    <div class="float-right">
+                                        <div class="dropdown dropleft">
+                                            <a href="#" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <ion-icon name="ellipsis-vertical"></ion-icon>
+                                            </a>
+                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                <a class="dropdown-item" target="_blank" :href="'/Quadro/'+quadro.url">Visualizar</a>
+                                                <a class="dropdown-item" href="#" v-on:click="deleteQuadro(quadro.id)">Excluir</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <h6 class="card-title"><a target="_blank":title="quadro.nome" :href="'/Quadro/'+quadro.url">{{formatTitle(quadro.nome)}}</a></h6>
+                                    <small class="card-text"><ion-icon name="time-outline"></ion-icon> {{formatDate(quadro.data_Criacao)}}</small>
+                                </div>
+                            </div>
+                            <br />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <a href="#" class="text-info" v-on:click="addQuadro()"><ion-icon name="add-circle" class="zoom-2" size="large"></ion-icon><br /></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>
+
+
+
+<script>
+
+    var home = new Vue({
+        el: "#app",
+        data: {
+            quadros: "",
+            semQuadros: false,
+            nomeQuadro: "",
+            show: false
+        },
+        methods: {
+            deleteQuadro(idQuadro) {
+                showLoader();
+                Swal.fire({
+                    icon: 'question',
+                    showCancelButton: true,
+                    title: 'Tem certeza?',
+                    text: 'Todos os cartões que estiverem nele serão excluídos.',
+                    confirmButtonText: 'Sim, exclua.',
+                    cancelButtonText: 'Cancelar'
+                }).then(result => {
+                    if (result.value) {
+                        axios.post('/api/quadro/deletequadro?idQuadro=' + idQuadro).then(response => {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Sucesso',
+                                text: 'Quadro excluído com sucesso',
+                                timer: 1500
+                            });
+                            hideLoader();
+                            this.loadQuadros();
+                        }).catch(error => {
+                            console.log(error);
+                            hideLoader();
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: error.response.data
+                            });
+                        });
+                    }
+                });
+
+            },
+            loadQuadros() {
+                showLoader();
+                axios.get('/api/quadro/getquadros').then(response => {
+                    this.quadros = response.data;
+                    console.log(this.quadros);
+                    if (this.quadros.length == 0) {
+                        this.semQuadros = true;
+                    }
+                    else {
+                        this.semQuadros = false;
+                    }
+                    hideLoader();
+                }).catch(error => {
+                    console.log(error);
+                    hideLoader();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: error.response.data
+                    });
+                });
+            },
+            addQuadro() {
+                Swal.fire({
+                    title: 'Nome do quadro',
+                    html:
+                        '<input type="text" class="form-control" max="10" id="nomeQuadro" />',
+                    confirmButtonText: 'Criar quadro',
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        showLoader();
+                        var nomeQuadro = document.getElementById('nomeQuadro').value;
+                        if (nomeQuadro.length >= 3) {
+                            axios.post('/api/quadro/addquadro?quadroNome=' + nomeQuadro).then(response => {
+                                hideLoader();
+                                location.href = "/Quadro/" + response.data;
+                            }).catch(error => {
+                                hideLoader();
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: error.response.data
+                                })
+                            });
+                        }
+                        else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: 'Por favor, preencha pelo menos 3 caracteres'
+                            })
+                            hideLoader();
+                        }
+
+                    }
+                })
+            },
+            formatDate(value) {
+                if (value) {
+                    return moment(String(value)).format('DD/MM/YYYY')
+                }
+            },
+            formatTitle(texto) {
+                if (texto.length > 15) {
+                    return texto.substring(0, 15) + '...';
+                }
+                else {
+                    return texto;
+                }
+            }
+
+        },
+        mounted: function () {
+            this.show = true;
+            this.loadQuadros();
+        }
+    });
+</script>

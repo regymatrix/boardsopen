@@ -1,0 +1,297 @@
+﻿body {
+    padding: 30px;
+}
+
+.header {
+    padding: 10px;
+}
+
+.header-mobile {
+}
+
+.boards-logo {
+    width: 300px;
+}
+
+input {
+    text-align: center;
+}
+
+button {
+    background: transparent;
+    border: 0;
+}
+
+
+.bg-liberty {
+    background: #474787 !important;
+}
+
+.bg-red {
+    background: #cd6133 !important;
+}
+
+.zoom-2 {
+    zoom: 2;
+}
+
+.dropdown-toggle::after {
+    display: none !important;
+}
+
+html-textarea.form-control {
+    height: auto;
+    font-size: 18px !important;
+    background: #fff !important;
+}
+
+textarea.form-control {
+    height: auto;
+    font-size: 18px !important;
+    background: #fff !important;
+}
+
+.dropleft::after {
+    display: none !important;
+}
+
+.boards-logo-home {
+    width: 400px;
+    max-width: 100%;
+}
+
+.space-100 {
+    height: 100px !important;
+}
+
+.space-75 {
+    height: 75px !important;
+}
+
+.space-50 {
+    height: 50px !important;
+}
+
+.space-15 {
+    height: 15px !important;
+}
+
+.button-login {
+    zoom: 3;
+    color: #EFB84D !important;
+}
+
+.button-menu {
+    zoom: 3;
+}
+
+.menu {
+    padding-top: 10px;
+}
+
+a {
+    color: #474e55;
+    text-decoration: none;
+    background-color: transparent;
+}
+
+    a:hover {
+        color: #202429;
+        text-decoration: none;
+        background-color: transparent;
+    }
+
+.padding-20 {
+    padding: 20px;
+}
+
+.padding-100 {
+    padding: 100px;
+}
+
+.text-danger {
+    color: #a03e48 !important;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    height: calc(1.5em + .75rem + 2px);
+    padding: .375rem .75rem;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #EDF6FF;
+    border: 1px solid #ffffff;
+    border-radius: 10px;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.loader {
+    -webkit-animation: spin 1000ms infinite linear;
+    animation: spin 1000ms infinite linear;
+}
+
+.hidden {
+    display: none;
+}
+
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(359deg);
+        transform: rotate(359deg);
+    }
+}
+
+@keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(359deg);
+        transform: rotate(359deg);
+    }
+}
+
+.boards-div {
+    font-size: 18px;
+    background-color: #EDF6FF;
+    padding: 10px;
+    border: 1px solid #ffffff;
+    border-radius: 10px;
+}
+
+.bg-gray {
+    background-color: #F0F0F0 !important;
+}
+
+::-webkit-input-placeholder {
+    text-align: center;
+}
+
+:-moz-placeholder { /* Firefox 18- */
+    text-align: center;
+}
+
+::-moz-placeholder { /* Firefox 19+ */
+    text-align: center;
+}
+
+:-ms-input-placeholder {
+    text-align: center;
+}
+
+
+.fade-enter-active, .fade-leave-active {
+    transition: opacity .5s;
+}
+
+.fade-enter, .fade-leave-to /* .fade-leave-active em versões anteriores a 2.1.8 */ {
+    opacity: 0;
+}
+
+
+
+
+.card-default {
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid rgb(240 240 240);
+    border-radius: 10px;
+}
+
+
+.card {
+    height: 100px;
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid rgb(240 240 240);
+    border-radius: 10px;
+    box-shadow: 1px 1px 5px #ccc;
+}
+
+.amareloMargi {
+    color: #f87a08 !important;
+    font-weight:bold;
+}
+
+
+/* Tooltip container */
+.tooltip {
+}
+
+    /* Tooltip text */
+    .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 120px;
+        background-color: black;
+        color: #fff;
+        text-align: center;
+        padding: 5px 0;
+        border-radius: 6px;
+        /* Position the tooltip text - see examples below! */
+        position: absolute;
+        z-index: 1;
+    }
+
+    /* Show the tooltip text when you mouse over the tooltip container */
+    .tooltip:hover .tooltiptext {
+        visibility: visible;
+    }
+
+
+@media print {
+    tr.vendorListHeading {
+        background-color: #1a4567 !important;
+        -webkit-print-color-adjust: exact;
+    }
+}
+
+@media print {
+    .vendorListHeading th {
+        color: white !important;
+    }
+}
+
+
+.numero-cartao {
+    opacity: 0.5;
+}
+
+.caixaTitulo {
+    background: #fff;
+    margin-top: -15px;
+    border-radius: 10px;
+    padding-left: 10px;
+    padding-top: 10px;
+    font-family: 'Baloo Tamma 2', cursive !important;
+    box-shadow: 1px 1px 5px #ccc;
+}
+
+    .caixaTitulo h2 {
+       
+        font-family: 'Baloo Tamma 2', cursive !important;
+        
+    }

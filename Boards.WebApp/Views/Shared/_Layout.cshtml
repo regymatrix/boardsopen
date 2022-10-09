@@ -1,0 +1,82 @@
+﻿@model Boards.WebApp.ViewModels.DefaultViewModel
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Boards by Margi</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Tamma+2:wght@600&display=swap" rel="stylesheet">
+    <link rel="icon" href="~/img/icone.png">
+    <partial name="Partials/_Scripts.cshtml" />
+</head>
+<body>
+    <div id="headerApp">
+        <transition name="fade">
+            <div v-if="show">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="header-mobile d-block d-sm-none">
+                            <img src="~/img/icone.png" class="boards-icone " />
+                        </div>
+                        <div class="header d-none d-sm-block">
+                            <img src="~/img/logo.png" class="boards-logo" />
+                        </div>
+                    </div>
+                    <div class="col-6 text-right">
+                        @if (Model.IsLogado)
+                        {
+                            <partial name="Partials/_MenuLogado.cshtml" />
+                        }
+                        else
+                        {
+                            <partial name="Partials/_MenuPublico.cshtml" />
+                        }
+                    </div>
+                </div>
+
+
+            </div>
+        </transition>
+    </div>
+    @RenderBody()
+    <div id="footer">
+        <transition name="fade">
+            <div v-if="show" class="text-center">
+                <br />
+                <div class="space-50"></div>
+                <p align="center">
+                    Versão @Model.Versao<br />
+                    <img src="~/img/brazil.png" width="30px" />
+                </p>
+            </div>
+        </transition>
+    </div>
+    <script>
+        var headerApp = new Vue({
+            el: "#footer",
+            data: {
+                show: false
+            },
+            methods: {},
+            mounted: function () {
+                this.show = true;
+            }
+        });
+    </script>
+    <script>
+        var headerApp = new Vue({
+            el: "#headerApp",
+            data: {
+                show: false
+            },
+            methods: {
+            },
+            mounted: function () {
+                this.show = true;
+            }
+        });
+    </script>
+
+</body>
+</html>

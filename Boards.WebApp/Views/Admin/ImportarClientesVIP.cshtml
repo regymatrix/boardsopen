@@ -1,0 +1,58 @@
+﻿@model Boards.WebApp.ViewModels.DefaultViewModel
+@{
+    ViewData["Title"] = "Dashboard Administrativo";
+    Layout = "../Shared/_LayoutAdmin.cshtml";
+    var TemResultado = ViewData["Resultado"] != null;
+}
+
+<div id="app">
+    <transition name="fade">
+        <div v-if="show">
+            <div class="boards-div bg-gray">
+                <ion-icon name="finger-print-outline"></ion-icon> Bem vindo, @Model.UsuarioLogado.Nome
+            </div>
+            <div class="space-15"></div>
+            <div class="boards-div" v-if="!semQuadros">
+                <div class="padding-20 text-center">
+                    <h4 class="text-left"><ion-icon name="cloud-upload"></ion-icon> Importar clientes VIP</h4>
+                    <br />
+                    <form method="post" enctype="multipart/form-data" class="text-left" action="#">
+                        <input type="file" accept=".csv" name="formFile" />
+                        <br />
+                        <br />
+                        <button class="btn btn-dark btn-block">
+                            Importar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>
+
+
+
+<script>
+
+    var home = new Vue({
+        el: "#app",
+        data: {
+            quadros: "",
+            semQuadros: false,
+            nomeQuadro: "",
+            show: false,
+            temResultado: "@TemResultado"
+        },
+        methods: {
+            mostrarResultado() {
+                if (this.temResultado != "False") {
+                    Swal.fire({icon: "@ViewData["TipoResultado"]",html: "@ViewData["Resultado"]"});
+                }
+            }
+        },
+        mounted: function () {
+            this.show = true;
+            this.mostrarResultado();
+        }
+    });
+</script>

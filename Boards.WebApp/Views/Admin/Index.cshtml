@@ -1,0 +1,87 @@
+﻿@{
+    ViewData["Title"] = "Bem vindo";
+    Layout = "../Shared/_LayoutHome.cshtml";
+}
+<div id="app">
+    <transition name="fade">
+        <div v-if="show" class="text-center">
+            <br />
+            <h3><ion-icon name="lock-closed"></ion-icon> Administração</h3>
+            <br />
+            <input class="form-control" v-model="email" v-lowercase v-on:enter="login()" placeholder="Digite aqui seu e-mail" type="email" />
+            <transition name="fade">
+                <div v-if="emailPreenchido">
+                    <input class="form-control" v-model="senha" v-lowercase v-on:enter="login()" placeholder="Digite aqui sua senha" type="password" />
+                </div>
+            </transition>
+            <div class="space-75"></div>
+            <div class="text-center">
+                <button v-on:click="login()" href="#" class="button-login">
+                    <ion-icon name="flash" size="large"></ion-icon>
+                </button>
+            </div>
+        </div>
+    </transition>
+</div>
+
+
+
+<script>
+    var home = new Vue({
+        el: "#app",
+        data: {
+            show: false,
+            emailPreenchido: false,
+            email: "",
+            senha: ""
+        },
+        methods: {
+            login() {
+                if (this.emailPreenchido == false) {
+                    if (this.email.length > 3) {
+                        this.emailPreenchido = true;
+                    }
+                    else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            html: 'Por favor, preencha o e-mail corretamente.'
+                        });
+                    }
+                    return;
+                }
+                else {
+                    showLoader();
+                    axios.post("/api/auth/LoginAdministrador?email=" + this.email +'&senha=' + this.senha).then(response => {
+                        hideLoader();
+                        location.href = "/Admin/Dashboard"
+                    }).catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            html: error.response.data
+                        });
+                        hideLoader();
+                    });
+                }
+            },
+            captureEnter(key) {
+                if (key == "Enter") {
+                    this.login();
+                }
+            }
+        },
+        mounted: function () {
+            this.show = true;
+            window.addEventListener("keypress", e => {
+                this.captureEnter(e.code);
+            });
+            Vue.directive("lowercase", {
+                update: function (el) {
+                    el.value = el.value.toLowerCase()
+                }
+            })
+
+        }
+    });
+</script>

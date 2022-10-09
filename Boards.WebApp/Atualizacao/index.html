@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="ISO-8859-1">
+    <title>Atualização - Boards by Margi</title>
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/site.css" />
+    <link rel="icon" href="img/icone.png">
+
+</head>
+<body>
+    <div id="headerApp">
+        <transition name="fade">
+            <div v-if="show" class="text-center">
+                <div class="space-15"></div>
+                <div class="header text-center">
+                    <img src="img/logo.png" class="boards-logo-home" />
+                </div>
+            </div>
+        </transition>
+    </div>
+    <br />
+    <br />
+    <div class="text-center">
+        <div class="caixaTitulo padding-20">
+            <br />
+            <img src="img/update.png" width="150px" />
+            <br />
+            <br />
+            <h2>Estamos atualizando o sistema</h2>
+            <h6>Bem vindo, é um prazer receber sua visita.</h6>
+            <h6>No momento estamos atualizando o sistema.</h6>
+            <h6>Por favor, retorne mais tarde.</h6>
+        </div>
+    </div>
+
+
+
+    <div id="footer">
+        <transition name="fade">
+            <div v-if="show" class="text-center">
+                <br />
+                <div class="space-50"></div>
+                <p align="center">
+                    <img src="img/brazil.png" width="30px" />
+                </p>
+            </div>
+        </transition>
+    </div>
+    <script>
+        var headerApp = new Vue({
+            el: "#footer",
+            data: {
+                show: false
+            },
+            methods: {},
+            mounted: function () {
+                this.show = true;
+            }
+        });
+    </script>
+    <script>
+        var headerApp = new Vue({
+            el: "#headerApp",
+            data: {
+                show: false
+            },
+            methods: {},
+            mounted: function () {
+                this.show = true;
+            }
+        });
+    </script>
+    <script type="module" src="https://unpkg.com/ionicons@5.1.2/dist/ionicons/ionicons.esm.js"></script>
+    <script src="vuejs/production-vue.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-178504403-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-178504403-1');
+    </script>
+    <script>
+        Vue.config.ignoredElements = [/^ion-icon/];
+        Vue.use(VTooltip);
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+</body>
+</html>

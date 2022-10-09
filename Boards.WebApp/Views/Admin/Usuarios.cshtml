@@ -1,0 +1,166 @@
+﻿@model Boards.WebApp.ViewModels.DefaultViewModel
+@{
+    ViewData["Title"] = "Administração de usuários";
+    Layout = "../Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app">
+    <!-- Modal de Usuários do Quadro -->
+    <div class="modal fade" id="modalEdicaoUsuario" v-if="UsuarioEditando != ''" tabindex="-1" role="dialog" aria-labelledby="modalEdicaoUsuarioLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Editando: {{UsuarioEditando.nome}}</h5>
+                    <button type="button" class="close" id="btFecharModal" data-dismiss="modal" aria-label="Fechar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <label>Nome</label>
+                    <input type="text" class="form-control" v-model="UsuarioEditando.nome" placeholder="Nome" />
+                    <label>E-mail</label>
+                    <input type="email" class="form-control" v-model="UsuarioEditando.email" placeholder="E-mail" />
+                    <label>Senha</label>
+                    <input type="password" class="form-control" v-model="UsuarioEditando.senha" placeholder="Senha" />
+                    <label>Tags</label>
+                    <input type="text" class="form-control" v-model="UsuarioEditando.tags" placeholder="Tags" />
+                    <hr />
+                    <a class="btn btn-success" v-on:click="salvarEdicaoUsuario()" href="#">Salvar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <transition name="fade">
+        <div v-if="show">
+            <div class="boards-div bg-gray">
+                <ion-icon name="finger-print-outline"></ion-icon> Bem vindo, @Model.UsuarioLogado.Nome
+            </div>
+            <div class="space-15"></div>
+            <div class="boards-div" v-if="!semQuadros">
+                <div class="caixaTitulo">
+                    <img class="float-left" src="~/img/dashboard.png" width="30px" /><h2>&nbsp;Usuários</h2>
+                </div>
+                <div class="padding-20 text-center">
+                    <input type="text" v-on:keyup="loadListaUsuarios()" v-model:value="txtPesquisa" class="shadow-sm bg-white p-3 mb-5 form-control" placeholder="Pesquise aqui" />
+
+                    <div class="table-responsive">
+                        <table class="table" id="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Nome</th>
+                                    <th scope="col">E-mail</th>
+                                    <th scope="col">Tag(s)</th>
+                                    <th scope="col">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="usuario in Usuarios">
+                                    <td>{{usuario.nome}}</td>
+                                    <td>{{usuario.email}}</td>
+                                    <td>{{usuario.tags}}</td>
+                                    <td>
+                                        <a v-on:click="editarUsuario(usuario)" data-toggle="modal" data-target="#modalEdicaoUsuario" class="text-primary"><ion-icon size="large" name="create"></ion-icon></a>
+                                        <a v-on:click="excluirUsuario(usuario)" class="text-danger"><ion-icon size="large" name="trash"></ion-icon></a>
+                                    </td>
+                                </tr>
+                        </table>
+                    </div>
+
+                    <div class="text-center">
+                        <a href="#" v-on:click="aumentarQtdRegistrosExibidos()" class="btn btn-outline-info btn-lg">Ver mais</a>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </transition>
+</div>
+
+
+
+<script>
+
+    var home = new Vue({
+        el: "#app",
+        data: {
+            quadros: "",
+            semQuadros: false,
+            nomeQuadro: "",
+            show: false,
+            QtdRegistrosExibidos: 10,
+            txtPesquisa: "",
+            Usuarios: "",
+            UsuarioEditando: ""
+        },
+        methods: {
+            excluirUsuario(usuario) {
+                Swal.fire({
+                    title: 'Excluir ' + usuario.nome + '?',
+                    text: "Essa ação é irreversível.",
+                    icon: 'error',
+                    confirmButtonText: 'Sim, excluir',
+                    cancelButtonText: 'Não',
+                    showCancelButton: true
+                }).then((result) => {
+                    if (result.value) {
+                        showLoader();
+                        axios
+                            .post('/api/usuario/delete', usuario)
+                            .then(response => {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Sucesso',
+                                    text: 'O usuário foi excluido.'
+                                });
+                                hideLoader();
+                                this.loadListaUsuarios();
+                            });
+                    }
+                });
+            },
+            salvarEdicaoUsuario() {
+                showLoader();
+                axios.post('/api/usuario/update', this.UsuarioEditando).then(response => {
+                    if (response.data == "success") {
+                        this.loadListaUsuarios();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sucesso',
+                            text: 'Continue editando ou feche a janela'
+                        });
+
+                    }
+                    hideLoader();
+                }).catch(error => {
+                    console.log(error);
+                    hideLoader();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: error.response.data
+                    });
+                });
+            },
+            editarUsuario(usuario) {
+                this.UsuarioEditando = usuario;
+            },
+            aumentarQtdRegistrosExibidos() {
+                this.QtdRegistrosExibidos += 10;
+                this.loadListaUsuarios();
+            },
+            loadListaUsuarios() {
+                showLoader();
+                axios
+                    .get('/api/usuario/get?pesquisa=' + this.txtPesquisa + '&qtd=' + this.QtdRegistrosExibidos).then(response => {
+                        this.Usuarios = response.data;
+                        hideLoader();
+                    });
+            }
+        },
+        mounted: function () {
+            this.show = true;
+            this.loadListaUsuarios();
+        }
+    });
+</script>
